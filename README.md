@@ -1,4 +1,4 @@
-The solution to the coding challenge consists of a model composed of an four elements:
+I trained a model composed of four elements to classify images of beers by their labels.
 * Convert input data from float32 tensor to uint8 tensor as object detction layer expects uint8 tensor
 * Perform object detection to obtain boxes, class labels and scores of detected objects
 * Crop to the highest rated detection of a bottle and a glass. Resize and concat the bottle and the glass image. Tensor shape therefore changes from (batch_size, width, height, 3) to (batch_size, width, height, 6)
