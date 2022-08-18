@@ -105,6 +105,9 @@ class CropImageLayer(tf.keras.layers.Layer):
         GLASS_ID = 46 # bottle id for object detection
         bottle_boxes_filtered, glass_boxes_filtered = [], []
         bottle_box_ind, glass_box_ind = [], []
+        tf.print("="*80)
+        tf.print("boxes: " + str(boxes))
+        tf.print("boxes.shape: " + str(boxes.shape))
         if not boxes.shape[0]:
             return tf.concat([input, input], axis = 3)
 

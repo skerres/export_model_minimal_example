@@ -19,8 +19,7 @@ from io import BytesIO
 import tensorflow as tf
 import numpy as np
 
-from final_task import export_model
-import model
+import test_model
 
 
 def test_exported_model():
@@ -32,15 +31,15 @@ def test_exported_model():
 
     # """
     # create composed model, the solution to the coding challenge
-    ml_model = model.ComposedModel()
+    ml_model = test_model.ComposedModel()
+    ml_model.compile(optimizer='adam',
+            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+            metrics=['accuracy'])
     time_str = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
     basename = "composed_model_" + time_str
     # export to "output/composed_model"
-    export_model(ml_model, "output", basename)
-    # reload model which has just been exported
-    ml_model_reloaded = tf.saved_model.load(os.path.join("output", basename))
-
+    # ml_model_reloaded = tf.saved_model.load(os.path.join("output", basename))
     # open test image
     with open("0chimayblue_000.jpg", "rb") as img_file:
         # open test image encoded in base64
@@ -51,12 +50,17 @@ def test_exported_model():
     img = np.array(img) / 255.
     img = tf.expand_dims(img, axis=0)
     # convert base64 encoded image to string tensor
-    img_str = tf.io.decode_base64(img_base64)
-    img_str = tf.expand_dims(img_str, axis=0)
     predictions = ml_model(img, training=False)  # predictions for trained model
-    predictions_reloaded = ml_model_reloaded(img_str, training=False)  # predictions for trained model which was exported and then reimported
-    print("trained model: " + str(predictions.numpy())) #output: [0.01973824, 0.00156368, 0.3084035,  0.00962214, 0.6606724]
-    print("served model: " + str(predictions_reloaded[1].numpy())) #output:  [0.00097238, 0.03858528, 0.00063064, 0.502958, 0.4568537]
+    ml_model.save(os.path.join("output", basename), save_format = "tf")
+    # reload model which has just been exported
+    ml_model_reloaded = tf.keras.models.load_model(os.path.join("output", basename))
+    ml_model_reloaded.compile(optimizer='adam',
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+        metrics=['accuracy'])
+    tf.print(ml_model_reloaded)
+    predictions_reloaded = ml_model_reloaded(img, training=False)  # predictions for trained model which was exported and then reimported
+    print("trained model: " + str(predictions.numpy())) #output: [[9.7456181e-01 2.0527570e-04 1.9158632e-02 1.0962408e-03 4.9780323e-03]]
+    print("served model: " + str(predictions_reloaded.numpy())) #output:  [[0.00636891 0.9207034  0.00868604 0.00923812 0.05500359]]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
